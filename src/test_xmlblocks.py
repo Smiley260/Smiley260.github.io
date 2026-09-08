@@ -1,5 +1,5 @@
 import unittest
-from xmlblocks import markdown_to_blocks, block_to_block_type, BlockType
+from xmlblocks import markdown_to_blocks, block_to_block_type, BlockType, extract_title
 
 class TestXmlBlocks(unittest.TestCase):
 
@@ -302,6 +302,38 @@ no spaces?
         block_type = block_to_block_type(block_text)
         self.assertNotEqual(block_type, BlockType.O_LIST)
 
+
+    def test_title(self):
+        self.assertEqual(extract_title("# heading is here"), "heading is here")
+    
+    def test_titless(self):
+        with self.assertRaises(ValueError):
+            extract_title("## heading is here")
+
+    def test_title_from_list(self):
+        markdown = """
+### this heading is too small
+
+this isn't even a heading
+
+# this is just right
+
+
+"""
+        self.assertEqual(extract_title(markdown), "this is just right")
+
+    def test_title_from_list_whitespace(self):
+        markdown = """
+### this heading is too small
+
+this isn't even a heading
+
+#    this is just right   
+
+
+"""
+        self.assertEqual(extract_title(markdown), "this is just right")
+    
 
 if __name__ == "__main__":
     unittest.main()

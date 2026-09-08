@@ -21,7 +21,7 @@ def block_to_html(block, block_type):
         case BlockType.CODE:
             html_parent = code_to_html(block)
         case BlockType.QUOTE:
-            html_parent = list_to_html(block, r"> ?", "blockquote", "p")
+            html_parent = blockquote_to_html(block, r"> ?", "blockquote")
         case BlockType.U_LIST:
             html_parent = list_to_html(block, r"- ", "ul", "li")
         case BlockType.O_LIST:
@@ -37,8 +37,8 @@ def block_to_html(block, block_type):
 #input: block text for a heading
 #returns a heading node
 def heading_to_html(block_text):
-    text = re.split(r"#{1-6} ", block_text, maxsplit=1)[1]
-    heading = re.search(r"^#{1-6} ", block_text)
+    text = re.split(r"#{1,6} ", block_text, maxsplit=1)[1]
+    heading = re.search(r"^#{1,6} ", block_text)
     if heading:
         heading_val = len(heading.group()[:-1])
     else:
@@ -56,6 +56,20 @@ def code_to_html(block_text):
     text_node = TextNode(text, TextType.CODE)
     code_html =  text_node_to_html_node(text_node)
     html_parent = ParentNode(tag="pre", children=[code_html])
+    return html_parent
+
+
+#input: 
+#   text        - block text for the un-split list
+#   regex       - the regex string to determine the start of a line
+#   list_tag    - the parent HTML tag for the list node
+#returns:
+#   html_parent - the parent HTML node containing the list
+def blockquote_to_html(text, regex, list_tag):
+    text_lines = re.split(r"\n"+regex, text)
+    text_lines[0] = re.split(r"^"+regex, text_lines[0], maxsplit=1)[1]
+    lines = "\n".join(text_lines)
+    html_parent = paragraph_to_html(lines, list_tag)
     return html_parent
 
 #input: 
@@ -81,10 +95,9 @@ def list_to_html(text, regex, list_tag, line_tag):
 #   html_parent - a HTML node with the request tag type
 def paragraph_to_html(block_text, type):
 
-    text_nodes = text_to_textnodes(block_text.replace("\n", " "))
+    text_nodes = text_to_textnodes(block_text.replace("\n", " ")) if type != "blockquote" else text_to_textnodes(block_text)
     html_nodes = []
     for text_node in text_nodes:
         html_nodes.append(text_node_to_html_node(text_node))
-    
     html_parent = ParentNode(tag=type, children=html_nodes)
     return html_parent

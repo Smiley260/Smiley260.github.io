@@ -43,3 +43,9 @@ def block_to_block_type(block):
         else:
             return BlockType.PARAGRAPH
     
+def extract_title(markdown):
+    blocks = markdown_to_blocks(markdown)
+    for block in blocks:
+        if re.match(r"^# ", block):
+            return re.split(r"^# ", block)[1].strip()
+    raise ValueError("The provided markdown does no contain a title")

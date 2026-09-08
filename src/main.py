@@ -1,4 +1,6 @@
 from textnode import TextNode, TextType # type: ignore
+from xmltohtml import markdown_to_html_node
+from xmlblocks import extract_title
 from enum import Enum
 import os
 import shutil
@@ -23,10 +25,45 @@ def recursive_copy(src, dest):
 
     return dest
 
+def generate_page(from_path, template_path, dest_path):
+    print(f"Generating page from {from_path} to {dest_path} using {template_path}")
+
+    md = open(from_path)
+    markdown = md.read()
+
+    html = open(template_path)
+    template = html.read()
+
+    generated_html = markdown_to_html_node(markdown)
+    html_string = generated_html.to_html()
+    title = extract_title(markdown)
+
+    output = template.replace(r"{{ Title }}", title)
+    output = output.replace(r"{{ Content }}", html_string)
+
+    with open(dest_path, "w") as out:
+        out.write(output)
+
+    return
+
+def generate_pages_recursive(dir_path_content, template_path, dest_dir_path):
+    
+    contents = os.listdir(dir_path_content)
+    
+    for item in contents:
+        item_path = os.path.join(dir_path_content, item)
+        dest_path = os.path.join(dest_dir_path, item)
+        if os.path.isfile(item_path):
+            ext_split = os.path.splitext(item)
+            if ext_split[1] == ".md":
+                dest_path = os.path.join(dest_dir_path, ext_split[0] + ".html")
+                generate_page(item_path, template_path, dest_path)
+        elif not os.path.isfile(item_path):
+            os.mkdir(dest_path)
+            generate_pages_recursive(item_path, template_path, dest_path)
+
 def main():
-    node = TextNode("test link", TextType.LINK, "https://www.boot.dev")
-    print(node)
+    recursive_copy("static", "public")
 
-    print(recursive_copy("static", "public"))
-
+    generate_pages_recursive("content/", "template.html", "public/")
 main()

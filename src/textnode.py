@@ -33,8 +33,8 @@ def text_node_to_html_node(text_node: TextNode) -> LeafNode:
         case TextType.CODE:
             return LeafNode(tag="code", value=text_node.text)
         case TextType.LINK:
-            return LeafNode(tag="a", value=text_node.text, props=[f"href=\"{text_node.url}\""])
+            return LeafNode(tag="a", value=text_node.text, props={"href":f"{text_node.url}"})
         case TextType.IMAGE:
-            return LeafNode(tag="img", value="", props=[f"src=\"{text_node.url}\"", f"alt=\"{text_node.text}\""])
+            return LeafNode(tag="img", value="", props={"src":f"{text_node.url}", "alt":f"{text_node.text}"})
         case _:
             raise Exception("text node is not a defined text type")
