@@ -1,1 +1,1 @@
-python3 src/main.py "/Smiley260.github.io/" ch
+python3 src/main.py "./" ch
