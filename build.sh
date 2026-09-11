@@ -1,1 +1,1 @@
-python3 src/main.py "/Static-Website-Generator/" ch
+python3 src/main.py "/Smiley260.github.io/" ch
