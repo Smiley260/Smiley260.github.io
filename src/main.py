@@ -4,6 +4,7 @@ from xmlblocks import extract_title
 from enum import Enum
 import os
 import shutil
+import sys
 
 print("hello world")
 
@@ -25,7 +26,7 @@ def recursive_copy(src, dest):
 
     return dest
 
-def generate_page(from_path, template_path, dest_path):
+def generate_page(from_path, template_path, dest_path, basepath):
     print(f"Generating page from {from_path} to {dest_path} using {template_path}")
 
     md = open(from_path)
@@ -40,13 +41,15 @@ def generate_page(from_path, template_path, dest_path):
 
     output = template.replace(r"{{ Title }}", title)
     output = output.replace(r"{{ Content }}", html_string)
+    output = output.replace(r"href=\"/", f"href=\"{basepath}")
+    output = output.replace(r"src=\"/", f"src=\"{basepath}")
 
     with open(dest_path, "w") as out:
         out.write(output)
 
     return
 
-def generate_pages_recursive(dir_path_content, template_path, dest_dir_path):
+def generate_pages_recursive(dir_path_content, template_path, dest_dir_path, basepath):
     
     contents = os.listdir(dir_path_content)
     
@@ -57,13 +60,16 @@ def generate_pages_recursive(dir_path_content, template_path, dest_dir_path):
             ext_split = os.path.splitext(item)
             if ext_split[1] == ".md":
                 dest_path = os.path.join(dest_dir_path, ext_split[0] + ".html")
-                generate_page(item_path, template_path, dest_path)
+                generate_page(item_path, template_path, dest_path, basepath)
         elif not os.path.isfile(item_path):
             os.mkdir(dest_path)
-            generate_pages_recursive(item_path, template_path, dest_path)
+            generate_pages_recursive(item_path, template_path, dest_path, basepath)
 
 def main():
-    recursive_copy("static", "public")
+    basepath = sys.argv[1] if len(sys.argv[1]) > 1 else "/"
+    
 
-    generate_pages_recursive("content/", "template.html", "public/")
+    recursive_copy("static", "docs")
+
+    generate_pages_recursive(f"{basepath}content/", f"{basepath}template.html", f"{basepath}docs/", basepath)
 main()
